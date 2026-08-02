@@ -27,11 +27,6 @@ pnpm-debug.log*
 .vscode/
 .claude/
 
-# Vidéos locales — trop volumineuses pour GitHub sans Git LFS.
-# Les vidéos de projet sont servies via Vimeo (embeds).
-# Pour inclure ces fichiers plus tard, installe git-lfs et supprime ces lignes.
-public/videos/
-
 # Fichiers de référence design (non nécessaires au build)
 guide-de-style*.html
 claude.md

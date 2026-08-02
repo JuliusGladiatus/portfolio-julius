@@ -42,7 +42,6 @@ chapitres:
       - "/videos/ballon-ovale/vertical-2.mp4"
       - "/videos/ballon-ovale/vertical-3.mp4"
       - "/videos/ballon-ovale/vertical-4.mp4"
-      - "/videos/ballon-ovale/vertical-5.mp4"
       - "/videos/ballon-ovale/vertical-8.mp4"
 photos: []
 videos_verticales: []

@@ -34,8 +34,6 @@ photos:
 videos_verticales:
   - "/videos/medical/medical-vertical-1.mp4"
   - "/videos/medical/medical-vertical-4.mp4"
-  - "/videos/medical/medical-vertical-5.mp4"
-  - "/videos/medical/medical-vertical-6.mp4"
   - "/videos/medical/medical-vertical-7.mp4"
 materiel:
   - "canon eos r6"
