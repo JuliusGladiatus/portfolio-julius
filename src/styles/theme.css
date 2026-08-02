@@ -1,0 +1,78 @@
+/* Palette — deux dominantes, trois touches d'accent (90/10) */
+:root {
+	--color-snow: #f8f9ff;
+	--color-mountain: #454441;
+	--color-sun: #ffda91;
+	--color-nature: #aec9a7;
+	--color-water: #a9c2d9;
+	--color-mountain-soft: #6f6e6a;
+
+	--font-display: 'Ogg', serif;
+	--font-body: 'Fieldwork', sans-serif;
+
+	/* Accents par catégorie */
+	--accent-voyage:    var(--color-nature);  /* #AEC9A7 — vert nature    */
+	--accent-sport:     var(--color-sun);     /* #FFDA91 — jaune soleil   */
+	--accent-corporate: var(--color-water);   /* #A9C2D9 — bleu aquatique */
+
+	/* Hauteur de la barre fixe — à répercuter sur les héros */
+	--navbar-height: 60px;
+}
+
+/* Thème sombre — par défaut */
+:root,
+:root[data-theme='dark'] {
+	/* Glass — dark theme */
+	--glass-clear-bg:       rgba(38, 37, 35, 0.14);
+	--glass-clear-border:   rgba(248, 249, 255, 0.10);
+	--glass-clear-fallback: rgba(45, 44, 41, 0.88);
+
+	--glass-blur-bg:        rgba(22, 22, 20, 0.52);
+	--glass-blur-border:    rgba(248, 249, 255, 0.13);
+	--glass-blur-fallback:  rgba(30, 30, 28, 0.92);
+
+	--glass-frosted-bg:        rgba(18, 17, 16, 0.66);
+	--glass-frosted-border:    rgba(248, 249, 255, 0.09);
+	--glass-frosted-fallback:  rgba(40, 39, 37, 0.95);
+}
+
+/* Thème sombre — par défaut */
+:root,
+:root[data-theme='dark'] {
+	--color-bg: var(--color-mountain);
+	--color-text: var(--color-snow);
+	--color-text-muted: rgba(248, 249, 255, 0.64);
+	--color-border: rgba(248, 249, 255, 0.12);
+	--color-surface: rgba(248, 249, 255, 0.05);
+	--color-surface-border: rgba(248, 249, 255, 0.18);
+	--color-overlay-top: rgba(40, 40, 38, 0.34);
+	--color-overlay-bottom: rgba(40, 40, 38, 0.4);
+	/* Version alpha-0 du fond — pour les dégradés sans artefact "gris" */
+	--color-bg-alpha0: rgba(69, 68, 65, 0);
+}
+
+/* Thème clair */
+:root[data-theme='light'] {
+	--color-bg: var(--color-snow);
+	--color-bg-alpha0: rgba(248, 249, 255, 0);
+	--color-text: var(--color-mountain);
+	--color-text-muted: rgba(69, 68, 65, 0.64);
+	--color-border: rgba(69, 68, 65, 0.1);
+	--color-surface: var(--color-snow);
+	--color-surface-border: rgba(69, 68, 65, 0.14);
+	--color-overlay-top: rgba(40, 40, 38, 0.34);
+	--color-overlay-bottom: rgba(40, 40, 38, 0.4);
+
+	/* Glass — light theme */
+	--glass-clear-bg:       rgba(248, 249, 255, 0.62);
+	--glass-clear-border:   rgba(69, 68, 65, 0.16);
+	--glass-clear-fallback: rgba(248, 249, 255, 0.90);
+
+	--glass-blur-bg:        rgba(248, 249, 255, 0.58);
+	--glass-blur-border:    rgba(69, 68, 65, 0.13);
+	--glass-blur-fallback:  rgba(248, 249, 255, 0.94);
+
+	--glass-frosted-bg:        rgba(248, 249, 255, 0.74);
+	--glass-frosted-border:    rgba(69, 68, 65, 0.11);
+	--glass-frosted-fallback:  rgba(248, 249, 255, 0.97);
+}

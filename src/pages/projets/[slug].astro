@@ -1,0 +1,188 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import AdventureHero from '../../components/AdventureHero.astro';
+import VideoEmbed from '../../components/VideoEmbed.astro';
+import ShortFormCarousel from '../../components/ShortFormCarousel.astro';
+import FresqueDefilante from '../../components/FresqueDefilante.astro';
+import ChapterBlock from '../../components/ChapterBlock.astro';
+import PhotoCarousel from '../../components/PhotoCarousel.astro';
+import Footer from '../../components/Footer.astro';
+
+export async function getStaticPaths() {
+	const projects = (await getCollection('projects')).filter((p) => p.data.publie);
+	const sorted = [...projects].sort((a, b) => a.data.ordre - b.data.ordre);
+
+	return sorted.map((project, index) => ({
+		params: { slug: project.id },
+		props: { project, next: sorted[(index + 1) % sorted.length] },
+	}));
+}
+
+const { project, next } = Astro.props;
+const { data } = project;
+
+---
+
+<Layout title={`${data.titre} — Julius Behind The Scenes`}>
+	<Navbar />
+
+	<AdventureHero
+		image={data.image_principale}
+		heroImages={data.hero_images.length > 0 ? data.hero_images : undefined}
+		videoSrc={data.hero_video}
+		placeName={data.titre}
+		time={data.carnet_heure}
+		period={data.carnet_periode}
+		location={data.lieu.toLowerCase()}
+		temperature={data.carnet_temperature}
+		date={data.carnet_date}
+		imagePosition={data.image_position}
+	/>
+
+	<div class="wrap">
+		{data.video_plateforme && data.video_id && (
+			<section>
+				<VideoEmbed platform={data.video_plateforme} videoId={data.video_id} title={data.titre} facade={data.image_principale} thumbnail={data.video_thumbnail} />
+			</section>
+		)}
+
+		<section class="intention">
+			<div class="eyebrow">intention</div>
+			<div class="text">
+				<p>{data.texte_intention}</p>
+			</div>
+		</section>
+
+		{data.chapitres.length > 0 && (
+			<section class="chapitres-section">
+				<div class="eyebrow">chapitres</div>
+				{data.chapitres.map((chapter, i) => (
+					<ChapterBlock
+						chapter={chapter}
+						isFirst={i === 0}
+						projectImage={data.image_principale}
+					/>
+				))}
+			</section>
+		)}
+
+		{data.fresque.length > 0 && (
+			<section class="fresque-section">
+				<div class="eyebrow">fresque</div>
+				<FresqueDefilante images={data.fresque} />
+			</section>
+		)}
+
+		{data.video2_plateforme && data.video2_id && (
+			<section>
+				<VideoEmbed platform={data.video2_plateforme} videoId={data.video2_id} title={data.titre} facade={data.image_principale} thumbnail={data.video2_thumbnail} />
+			</section>
+		)}
+
+		{data.photos.length > 0 && (
+			<section>
+				<div class="eyebrow">galerie</div>
+				<PhotoCarousel photos={data.photos} />
+			</section>
+		)}
+
+		{data.videos_verticales.length > 0 && (
+			<section>
+				<div class="eyebrow">formats courts</div>
+				<ShortFormCarousel videos={data.videos_verticales} />
+			</section>
+		)}
+
+		<section class="details">
+			<div class="eyebrow">détails</div>
+			<div class="tag-groups">
+				{data.materiel.length > 0 && (
+					<div class="group">
+						<h3>matériel</h3>
+						<div class="tags">
+							{data.materiel.map((item) => <span class="tag">{item}</span>)}
+						</div>
+					</div>
+				)}
+				{data.role.length > 0 && (
+					<div class="group">
+						<h3>rôle</h3>
+						<div class="tags">
+							{data.role.map((item) => <span class="tag">{item}</span>)}
+						</div>
+					</div>
+				)}
+				{data.livrables.length > 0 && (
+					<div class="group">
+						<h3>livrables</h3>
+						<div class="tags">
+							{data.livrables.map((item) => <span class="tag">{item}</span>)}
+						</div>
+					</div>
+				)}
+			</div>
+		</section>
+
+		{next && next.id !== project.id && (
+			<section class="next">
+				<div class="eyebrow">projet suivant</div>
+				<a class="next-link display" href={`/projets/${next.id}`}>{next.data.titre}</a>
+			</section>
+		)}
+	</div>
+
+	<Footer />
+</Layout>
+
+<style>
+	.intention .text :global(p) {
+		font-size: 19px;
+		font-weight: 300;
+		max-width: 62ch;
+		margin: 0 auto;
+		text-align: center;
+	}
+
+.tag-groups {
+		display: flex;
+		flex-direction: column;
+		gap: 22px;
+	}
+
+	.tags {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.tag {
+		font-size: 11.5px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: lowercase;
+		padding: 6px 12px;
+		border-radius: 999px;
+		border: 1px solid var(--color-surface-border);
+		color: var(--color-text-muted);
+	}
+
+	.next {
+		text-align: center;
+	}
+
+	.next-link {
+		display: inline-block;
+		font-size: clamp(32px, 6vw, 54px);
+		text-decoration: none;
+		color: var(--color-text);
+		transition: opacity 0.25s;
+	}
+
+	.next-link:hover {
+		opacity: 0.7;
+	}
+
+
+</style>

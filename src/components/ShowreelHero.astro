@@ -1,0 +1,204 @@
+---
+interface Props {
+  vimeoId?: string;
+  videoSrc?: string;
+  tagline: string;
+  facade?: string;
+}
+
+const {
+  vimeoId,
+  videoSrc,
+  tagline,
+  facade = 'linear-gradient(160deg, #6f8a9c 0%, #454441 75%)',
+} = Astro.props;
+
+const hasVimeo = !!vimeoId;
+const hasVideo = !!videoSrc;
+---
+
+<section class="showreel" style={`background-image: ${facade}`}>
+
+  {hasVideo && (
+    <video
+      class="bg-video"
+      src={videoSrc}
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+    ></video>
+  )}
+
+  {hasVimeo && (
+    <div class="player">
+      <iframe
+        src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&loop=1&muted=1&background=0&controls=0&title=0&byline=0&portrait=0`}
+        allow="autoplay; fullscreen; picture-in-picture"
+        title="Showreel"
+      ></iframe>
+    </div>
+  )}
+
+  <div class="veil"></div>
+
+  <div class="content">
+    <p class="tagline display">{tagline}</p>
+  </div>
+
+  {(hasVideo || hasVimeo) && (
+    <button class="sound-toggle" id="showreel-sound" type="button" aria-pressed="false" aria-label="Activer le son">
+      <svg class="icon icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5 6 9H2v6h4l5 4V5z"></path>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </svg>
+      <svg class="icon icon-unmuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5 6 9H2v6h4l5 4V5z"></path>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07M18.36 5.64a9 9 0 0 1 0 12.73"></path>
+      </svg>
+      <span class="label">son</span>
+    </button>
+  )}
+
+</section>
+
+<style>
+  .showreel {
+    position: relative;
+    /* Remonte sous la navbar fixe */
+    margin-top: calc(-1 * var(--navbar-height));
+    height: 100vh;
+    min-height: 520px;
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── vidéo locale ──────────────────────────────── */
+  .bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+  }
+
+  /* ── iframe Vimeo ──────────────────────────────── */
+  .player {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .player iframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 56.25vw;
+    min-height: 100vh;
+    min-width: 177.78vh;
+    transform: translate(-50%, -50%);
+    border: 0;
+    pointer-events: none;
+  }
+
+  /* ── voile de contraste ────────────────────────── */
+  .veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      180deg,
+      rgba(40, 40, 38, 0.25) 0%,
+      rgba(40, 40, 38, 0.08) 40%,
+      rgba(40, 40, 38, 0.52) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* ── contenu ───────────────────────────────────── */
+  .content {
+    position: relative;
+    z-index: 2;
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  .tagline {
+    color: var(--color-snow);
+    font-size: clamp(28px, 5vw, 48px);
+    text-shadow: 0 1px 30px rgba(40, 40, 38, 0.3);
+  }
+
+  /* ── bouton son ────────────────────────────────── */
+  .sound-toggle {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(248, 249, 255, 0.4);
+    background: rgba(40, 40, 38, 0.3);
+    color: var(--color-snow);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: 0.25s;
+  }
+
+  .sound-toggle:hover { border-color: var(--color-snow); }
+
+  .icon { width: 16px; height: 16px; }
+  .icon-unmuted { display: none; }
+
+  .sound-toggle[aria-pressed='true'] .icon-muted   { display: none; }
+  .sound-toggle[aria-pressed='true'] .icon-unmuted { display: block; }
+</style>
+
+<script>
+  // ── vidéo locale : fondu d'entrée + toggle son ──────────────────
+  const video = document.querySelector<HTMLVideoElement>('.showreel .bg-video');
+  if (video) {
+    video.addEventListener('canplay', () => {
+      video.style.opacity = '1';
+    }, { once: true });
+  }
+
+  // ── toggle son ──────────────────────────────────────────────────
+  const toggle = document.getElementById('showreel-sound');
+  const iframe = document.querySelector<HTMLIFrameElement>('.showreel .player iframe');
+
+  toggle?.addEventListener('click', () => {
+    const isUnmuted = toggle.getAttribute('aria-pressed') === 'true';
+    const next = !isUnmuted;
+
+    if (video) {
+      video.muted = !next;
+    } else if (iframe) {
+      iframe.contentWindow?.postMessage(
+        JSON.stringify({ method: 'setVolume', value: next ? 1 : 0 }),
+        'https://player.vimeo.com',
+      );
+    }
+
+    toggle.setAttribute('aria-pressed', String(next));
+    toggle.setAttribute('aria-label', next ? 'Couper le son' : 'Activer le son');
+  });
+</script>

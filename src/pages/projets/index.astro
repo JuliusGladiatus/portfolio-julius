@@ -1,0 +1,176 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/Navbar.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import Footer from '../../components/Footer.astro';
+
+const projects = (await getCollection('projects'))
+	.filter((p) => p.data.publie)
+	.sort((a, b) => a.data.ordre - b.data.ordre);
+
+const filters = [
+	{ key: 'all',       label: 'Tout' },
+	{ key: 'voyage',    label: 'Voyage' },
+	{ key: 'sport',     label: 'Sport' },
+	{ key: 'corporate', label: 'Corporate' },
+];
+---
+
+<Layout title="Projets — Julius Behind The Scenes">
+	<Navbar />
+
+	<PageHeader
+		image="/images/outdoor/outdoor-01.jpg"
+		imagePosition="center 35%"
+		eyebrow="projets"
+		title="Films & photos, par catégorie"
+	>
+		<!-- Filtres en glass-clear par-dessus l'image -->
+		<div class="filters" role="group" aria-label="Filtrer les projets par catégorie">
+			{filters.map((filter, index) => (
+				<button
+					class="filter"
+					data-filter={filter.key}
+					aria-pressed={index === 0 ? 'true' : 'false'}
+				>
+					{filter.label}
+				</button>
+			))}
+		</div>
+	</PageHeader>
+
+	<div class="wrap">
+		<section class="listing">
+			<div class="cards">
+				{projects.map((project) => (
+					<div class="card-wrap" data-categorie={project.data.categorie}>
+						<ProjectCard
+							href={`/projets/${project.id}`}
+							image={project.data.image_couverture ?? project.data.image_principale}
+							title={project.data.titre}
+							category={project.data.categorie}
+						/>
+					</div>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<Footer />
+</Layout>
+
+<style>
+	/* ── Filtres glass-clear par-dessus l'image ─────── */
+	.filters {
+		display: flex;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	.filter {
+		font-family: var(--font-body);
+		font-weight: 600;
+		font-size: 12.5px;
+		letter-spacing: 0.04em;
+		text-transform: lowercase;
+		padding: 8px 18px;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: background 0.22s, border-color 0.22s, color 0.22s;
+
+		/* glass-clear */
+		background: var(--glass-clear-bg);
+		backdrop-filter: blur(10px) saturate(140%);
+		-webkit-backdrop-filter: blur(10px) saturate(140%);
+		border: 1px solid var(--glass-clear-border);
+		color: var(--color-text-muted);
+	}
+
+	@supports not (backdrop-filter: blur(1px)) {
+		.filter { background: var(--glass-clear-fallback); }
+	}
+
+	.filter:hover {
+		background: color-mix(in srgb, var(--color-text) 12%, transparent);
+		border-color: color-mix(in srgb, var(--color-text) 28%, transparent);
+		color: var(--color-text);
+	}
+
+	/* ── Pilule active — teinte par catégorie ────────── */
+	.filter[aria-pressed='true'][data-filter='all'] {
+		background: color-mix(in srgb, var(--color-text) 16%, transparent);
+		border-color: color-mix(in srgb, var(--color-text) 32%, transparent);
+		color: var(--color-text);
+	}
+
+	.filter[aria-pressed='true'][data-filter='voyage'] {
+		background: color-mix(in srgb, var(--color-nature) 20%, transparent);
+		border-color: color-mix(in srgb, var(--color-nature) 40%, transparent);
+		color: var(--color-nature);
+	}
+
+	.filter[aria-pressed='true'][data-filter='sport'] {
+		background: color-mix(in srgb, var(--color-sun) 20%, transparent);
+		border-color: color-mix(in srgb, var(--color-sun) 40%, transparent);
+		color: var(--color-sun);
+	}
+
+	.filter[aria-pressed='true'][data-filter='corporate'] {
+		background: color-mix(in srgb, var(--color-water) 20%, transparent);
+		border-color: color-mix(in srgb, var(--color-water) 40%, transparent);
+		color: var(--color-water);
+	}
+
+	/* Repli navigateurs sans color-mix */
+	@supports not (color: color-mix(in srgb, red 50%, blue)) {
+		.filter[aria-pressed='true'] {
+			background: rgba(248, 249, 255, 0.22);
+			border-color: rgba(248, 249, 255, 0.48);
+			color: var(--color-snow);
+		}
+	}
+
+	/* ── Grille de cartes ───────────────────────────── */
+	.listing {
+		padding-top: 28px;
+	}
+
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 16px;
+	}
+
+	.card-wrap.is-hidden {
+		display: none;
+	}
+
+	@media (max-width: 860px) {
+		.cards { grid-template-columns: repeat(2, 1fr); }
+	}
+
+	@media (max-width: 520px) {
+		.cards { grid-template-columns: 1fr; }
+	}
+</style>
+
+<script>
+	const filters = document.querySelectorAll<HTMLButtonElement>('.filter');
+	const cards = document.querySelectorAll<HTMLElement>('.card-wrap');
+
+	filters.forEach((button) => {
+		button.addEventListener('click', () => {
+			filters.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+			button.setAttribute('aria-pressed', 'true');
+
+			const filter = button.dataset.filter;
+
+			cards.forEach((card) => {
+				const matches = filter === 'all' || card.dataset.categorie === filter;
+				card.classList.toggle('is-hidden', !matches);
+			});
+		});
+	});
+</script>

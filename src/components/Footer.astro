@@ -1,0 +1,70 @@
+---
+import Button from './Button.astro';
+---
+
+<footer class="site-footer">
+	<div class="wrap">
+		<div class="cta">
+			<h2>Un projet en tête ?</h2>
+			<p class="muted">Films de voyage, sport &amp; action, contenu de marque — racontons votre histoire.</p>
+			<div class="actions">
+				<Button href="mailto:collartjulianpro@gmail.com" variant="solid">Écrire un message</Button>
+				<Button href="https://instagram.com/juliusbhndthescenes" class="insta">@juliusbhndthescenes</Button>
+			</div>
+		</div>
+
+		<div class="bottom muted">
+			<span>© 2026 Julius Industries</span>
+			<a href="https://instagram.com/juliusbhndthescenes">Instagram</a>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		border-top: 1px solid var(--color-border);
+		padding: 56px 0 40px;
+		font-size: 13px;
+	}
+
+	.cta {
+		text-align: center;
+		padding-bottom: 40px;
+	}
+
+	.cta h2 {
+		margin-bottom: 12px;
+	}
+
+	.cta p {
+		margin: 0 auto 24px;
+	}
+
+	.actions {
+		display: flex;
+		justify-content: center;
+		gap: 14px;
+		flex-wrap: wrap;
+	}
+
+	.bottom {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px;
+		padding-top: 24px;
+		border-top: 1px solid var(--color-border);
+		text-transform: lowercase;
+	}
+
+	.bottom a {
+		text-decoration: none;
+		color: inherit;
+		transition: color 0.2s;
+	}
+
+	.bottom a:hover {
+		color: var(--color-text);
+	}
+</style>

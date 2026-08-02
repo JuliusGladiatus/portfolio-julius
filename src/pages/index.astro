@@ -1,0 +1,52 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import ShowreelHero from '../components/ShowreelHero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import FullBleedBanner from '../components/FullBleedBanner.astro';
+import Footer from '../components/Footer.astro';
+
+const allProjects = await getCollection('projects');
+const featured = allProjects
+	.filter((project) => project.data.phare && project.data.publie)
+	.sort((a, b) => a.data.ordre - b.data.ordre);
+---
+
+<Layout title="Julius Behind The Scenes">
+	<Navbar />
+
+	<ShowreelHero
+		videoSrc="/videos/accueil-heros.mp4"
+		tagline="Des images qui respirent le grand air."
+		facade="linear-gradient(160deg, #6f8a9c 0%, #454441 75%)"
+	/>
+
+	<div class="wrap">
+		<section>
+			<div class="eyebrow">projets phares</div>
+			<div class="cards">
+				{featured.map((project) => (
+					<ProjectCard
+						href={`/projets/${project.id}`}
+						image={project.data.image_couverture ?? project.data.image_principale}
+						title={project.data.titre}
+						category={project.data.categorie}
+					/>
+				))}
+			</div>
+		</section>
+	</div>
+
+	<FullBleedBanner text="Capturer ce que le grand air a de plus brut, le temps d'un instant." />
+
+	<Footer />
+</Layout>
+
+<style>
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 16px;
+	}
+</style>

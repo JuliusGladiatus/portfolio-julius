@@ -1,0 +1,42 @@
+---
+interface Props {
+	text: string;
+	image?: string;
+}
+
+const { text, image = 'linear-gradient(160deg, #454441 0%, #2f2e2c 100%)' } = Astro.props;
+---
+
+<section class="banner" style={`background-image: ${image}`}>
+	<div class="veil"></div>
+	<p class="quote display">{text}</p>
+</section>
+
+<style>
+	.banner {
+		position: relative;
+		min-height: 320px;
+		background-size: cover;
+		background-position: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 48px 24px;
+	}
+
+	.veil {
+		position: absolute;
+		inset: 0;
+		background: rgba(40, 40, 38, 0.34);
+	}
+
+	.quote {
+		position: relative;
+		z-index: 1;
+		color: var(--color-snow);
+		text-align: center;
+		max-width: 800px;
+		font-size: clamp(26px, 4vw, 38px);
+		line-height: 1.15;
+	}
+</style>

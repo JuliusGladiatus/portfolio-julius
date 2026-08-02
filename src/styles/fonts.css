@@ -1,0 +1,33 @@
+/* Ogg Light — police d'affichage, réservée aux instants forts (jamais en capitales, jamais pour les titres de section) */
+@font-face {
+	font-family: 'Ogg';
+	src: url('/fonts/Ogg-Light.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Fieldwork Humanist — corps de texte, titres de section, données chiffrées (distinguées par poids) */
+@font-face {
+	font-family: 'Fieldwork';
+	src: url('/fonts/Fieldwork-Hum-Light.otf') format('opentype');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fieldwork';
+	src: url('/fonts/Fieldwork-Hum-Demi-Bold.otf') format('opentype');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Fieldwork';
+	src: url('/fonts/Fieldwork-Hum-Black.otf') format('opentype');
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
+}

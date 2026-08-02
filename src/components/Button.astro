@@ -1,0 +1,48 @@
+---
+interface Props {
+	href?: string;
+	variant?: 'outline' | 'solid';
+	class?: string;
+}
+
+const { href, variant = 'outline', class: className = '' } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag class={`btn ${variant} ${className}`} href={href} type={href ? undefined : 'button'}>
+	<slot />
+</Tag>
+
+<style>
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-family: var(--font-body);
+		font-weight: 600;
+		font-size: 13.5px;
+		letter-spacing: 0.04em;
+		padding: 12px 24px;
+		border-radius: 8px;
+		border: 1px solid var(--color-text);
+		background: transparent;
+		color: var(--color-text);
+		text-decoration: none;
+		cursor: pointer;
+		transition: 0.25s;
+	}
+
+	.btn:hover {
+		background: var(--color-text);
+		color: var(--color-bg);
+	}
+
+	.btn.solid {
+		background: var(--color-text);
+		color: var(--color-bg);
+	}
+
+	.btn.solid:hover {
+		opacity: 0.85;
+	}
+</style>

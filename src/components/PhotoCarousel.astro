@@ -1,0 +1,442 @@
+---
+interface Props {
+  photos: { src: string; caption?: string }[];
+}
+const { photos } = Astro.props;
+
+const slides = photos.map(p => ({
+  path: p.src.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, ''),
+  caption: p.caption ?? '',
+}));
+
+const multi      = slides.length > 1;
+const hasCaption = slides.some(s => s.caption);
+---
+
+{slides.length > 0 && (
+  <div class="carousel" data-carousel>
+    <div class="frame">
+
+      {slides.map((s, i) => (
+        <div
+          class={`slide${i === 0 ? ' is-active' : ''}`}
+          data-src={s.path}
+          data-caption={s.caption}
+        >
+          <img
+            class="blur-bg"
+            src={i === 0 ? s.path : undefined}
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            class="photo"
+            src={i === 0 ? s.path : undefined}
+            alt={s.caption}
+            decoding={i === 0 ? 'sync' : 'async'}
+          />
+        </div>
+      ))}
+
+      {multi && (
+        <button class="arrow arrow-prev" aria-label="Photo précédente">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M11 14L6 9L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      )}
+      {multi && (
+        <button class="arrow arrow-next" aria-label="Photo suivante">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M7 4L12 9L7 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      )}
+      {multi && (
+        <div class="dots">
+          {slides.map((_, i) => (
+            <button class={`dot${i === 0 ? ' is-active' : ''}`} aria-label={`Photo ${i + 1}`}></button>
+          ))}
+        </div>
+      )}
+
+    </div>
+    {hasCaption && <p class="caption-out">{slides[0].caption}</p>}
+  </div>
+)}
+
+<style>
+  .carousel {
+    width: 100%;
+  }
+
+  /* cadre fixe 4:3 — ne bouge jamais */
+  .frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #111110;
+    cursor: zoom-in;
+    transition:
+      transform  0.35s cubic-bezier(0.2, 0, 0, 1),
+      box-shadow 0.35s;
+  }
+
+  .frame:hover {
+    transform: scale(1.006);
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* ── slides ──────────────────────────────────────── */
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.38s ease;
+  }
+
+  .slide.is-active { opacity: 1; }
+
+  /* fond flou : même image, fortement floutée et assombrie */
+  .blur-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px) brightness(0.28) saturate(0.5);
+    transform: scale(1.12); /* dépasse pour masquer les bords de flou */
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* photo principale : entière, sans recadrage */
+  .photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* ── flèches glass-clear ─────────────────────────── */
+  .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 4;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*
+     * Valeurs fixes (non thème) : le frame a toujours un fond très sombre
+     * (blur-bg à brightness 0.28), l'icône et la bordure sont toujours clairs.
+     */
+    background: rgba(20, 19, 17, 0.28);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid rgba(248, 249, 255, 0.16);
+    border-radius: 50%;
+    color: rgba(248, 249, 255, 0.82);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.22s, background 0.18s, color 0.18s;
+  }
+
+  .arrow:hover {
+    background: rgba(20, 19, 17, 0.50);
+    color: #f8f9ff;
+  }
+
+  .arrow-prev { left: 12px; }
+  .arrow-next { right: 12px; }
+
+  .frame:hover .arrow { opacity: 1; }
+
+  /* ── points ──────────────────────────────────────── */
+  .dots {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    z-index: 4;
+    padding: 0 12px;
+    opacity: 0;
+    transition: opacity 0.22s;
+    pointer-events: none;
+  }
+
+  .frame:hover .dots { opacity: 1; pointer-events: auto; }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(248, 249, 255, 0.42);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    /* Ombre portée : assure la lisibilité sur images claires comme sombres */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s, transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .dot.is-active {
+    background: #f8f9ff;
+    transform: scale(1.25);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.50), 0 0 0 1px rgba(0, 0, 0, 0.10);
+  }
+
+  /* ── légende ─────────────────────────────────────── */
+  .caption-out {
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    margin-top: 10px;
+    text-align: center;
+  }
+</style>
+
+<script>
+  // ── Lightbox partagée (singleton) ───────────────────────────────
+  interface LbPhoto { path: string; caption: string }
+
+  let lbRoot: HTMLElement | null = null;
+  let lbImg:  HTMLImageElement | null = null;
+  let lbCapEl:   HTMLElement | null = null;
+  let lbCountEl: HTMLElement | null = null;
+  let lbPhotos: LbPhoto[] = [];
+  let lbIdx = 0;
+
+  function buildLb() {
+    lbRoot = document.createElement('div');
+    Object.assign(lbRoot.style, {
+      position: 'fixed', inset: '0', zIndex: '1000',
+      /* glass-blur sombre : la page reste devinable derrière */
+      background: 'rgba(8, 8, 6, 0.70)',
+      backdropFilter: 'blur(36px) saturate(120%)',
+      WebkitBackdropFilter: 'blur(36px) saturate(120%)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      opacity: '0', transition: 'opacity 0.24s', cursor: 'default',
+    });
+    lbRoot.hidden = true;
+
+    lbImg = document.createElement('img');
+    Object.assign(lbImg.style, {
+      maxWidth: '92vw', maxHeight: '82vh',
+      objectFit: 'contain', borderRadius: '4px',
+      display: 'block', userSelect: 'none',
+    });
+
+    lbCapEl = document.createElement('p');
+    Object.assign(lbCapEl.style, {
+      color: 'rgba(248,249,255,0.45)', fontSize: '12px', fontWeight: '300',
+      letterSpacing: '0.05em', textTransform: 'lowercase',
+      marginTop: '14px', textAlign: 'center',
+    });
+
+    lbCountEl = document.createElement('span');
+    Object.assign(lbCountEl.style, {
+      position: 'absolute', top: '22px', left: '50%',
+      transform: 'translateX(-50%)',
+      color: 'rgba(248,249,255,0.35)', fontSize: '12px',
+      fontWeight: '300', letterSpacing: '0.1em',
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    Object.assign(closeBtn.style, {
+      position: 'absolute', top: '14px', right: '18px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: '40px', height: '40px', borderRadius: '50%',
+      /* pastille glass-clear — valeurs fixes : lightbox toujours sombre */
+      background: 'rgba(20, 19, 17, 0.28)',
+      backdropFilter: 'blur(10px) saturate(140%)',
+      WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+      border: '1px solid rgba(248, 249, 255, 0.14)',
+      color: 'rgba(248,249,255,0.72)', cursor: 'pointer',
+      padding: '0', lineHeight: '0', transition: 'background 0.18s, color 0.18s',
+    });
+    closeBtn.addEventListener('mouseenter', () => {
+      closeBtn.style.background = 'rgba(20, 19, 17, 0.50)';
+      closeBtn.style.color = '#f8f9ff';
+    });
+    closeBtn.addEventListener('mouseleave', () => {
+      closeBtn.style.background = 'rgba(20, 19, 17, 0.28)';
+      closeBtn.style.color = 'rgba(248,249,255,0.72)';
+    });
+    closeBtn.addEventListener('click', closeLb);
+
+    function makeLbArrow(dir: number, side: 'left' | 'right') {
+      const btn = document.createElement('button');
+      btn.innerHTML = dir === -1
+        ? `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 16L7.5 10L12.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7.5 4L12.5 10L7.5 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      Object.assign(btn.style, {
+        position: 'absolute', top: '50%', [side]: '18px',
+        transform: 'translateY(-50%)',
+        /* pastille glass-clear — valeurs fixes : lightbox toujours sombre */
+        background: 'rgba(20, 19, 17, 0.28)',
+        backdropFilter: 'blur(10px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+        border: '1px solid rgba(248, 249, 255, 0.14)',
+        borderRadius: '50%', width: '44px', height: '44px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: 'rgba(248,249,255,0.72)', cursor: 'pointer',
+        transition: 'background 0.18s, color 0.18s', lineHeight: '0',
+      });
+      btn.addEventListener('mouseenter', () => {
+        btn.style.background = 'rgba(20, 19, 17, 0.50)'; btn.style.color = '#f8f9ff';
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.background = 'rgba(20, 19, 17, 0.28)'; btn.style.color = 'rgba(248,249,255,0.72)';
+      });
+      btn.addEventListener('click', (e) => { e.stopPropagation(); navLb(dir); });
+      return btn;
+    }
+
+    lbRoot.addEventListener('click', closeLb);
+    lbImg.addEventListener('click', (e) => e.stopPropagation());
+
+    document.addEventListener('keydown', (e) => {
+      if (!lbRoot || lbRoot.hidden) return;
+      if (e.key === 'Escape')     closeLb();
+      if (e.key === 'ArrowLeft')  navLb(-1);
+      if (e.key === 'ArrowRight') navLb(1);
+    });
+
+    let lbTouchX = 0;
+    lbRoot.addEventListener('touchstart', (e) => { lbTouchX = e.touches[0].clientX; }, { passive: true });
+    lbRoot.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - lbTouchX;
+      if (Math.abs(dx) > 50) navLb(dx < 0 ? 1 : -1);
+    });
+
+    lbRoot.appendChild(lbCountEl);
+    lbRoot.appendChild(lbImg);
+    lbRoot.appendChild(lbCapEl);
+    lbRoot.appendChild(closeBtn);
+    lbRoot.appendChild(makeLbArrow(-1, 'left'));
+    lbRoot.appendChild(makeLbArrow(1, 'right'));
+    document.body.appendChild(lbRoot);
+  }
+
+  function renderLb() {
+    const p = lbPhotos[lbIdx];
+    lbImg!.src = p.path;
+    lbCapEl!.textContent = p.caption;
+    lbCapEl!.style.display = p.caption ? '' : 'none';
+    lbCountEl!.textContent = lbPhotos.length > 1 ? `${lbIdx + 1} / ${lbPhotos.length}` : '';
+  }
+
+  function openLb(photos: LbPhoto[], idx: number) {
+    if (!lbRoot) buildLb();
+    lbPhotos = photos; lbIdx = idx;
+    renderLb();
+    lbRoot!.hidden = false;
+    requestAnimationFrame(() => { lbRoot!.style.opacity = '1'; });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLb() {
+    if (!lbRoot) return;
+    lbRoot.style.opacity = '0';
+    setTimeout(() => { lbRoot!.hidden = true; }, 240);
+    document.body.style.overflow = '';
+  }
+
+  function navLb(dir: number) {
+    lbIdx = (lbIdx + dir + lbPhotos.length) % lbPhotos.length;
+    renderLb();
+  }
+
+  // ── Initialisation de chaque carrousel ──────────────────────────
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((el) => {
+    const frame   = el.querySelector<HTMLElement>('.frame')!;
+    const slides  = [...el.querySelectorAll<HTMLElement>('.slide')];
+    const dots    = [...el.querySelectorAll<HTMLButtonElement>('.dot')];
+    const prevBtn = el.querySelector<HTMLButtonElement>('.arrow-prev');
+    const nextBtn = el.querySelector<HTMLButtonElement>('.arrow-next');
+    const capOut  = el.querySelector<HTMLElement>('.caption-out');
+
+    let cur = 0;
+    const total = slides.length;
+
+    const photoData = slides.map(slide => ({
+      path:    slide.dataset.src || '',
+      caption: slide.dataset.caption || '',
+    }));
+
+    // ── chargement différé ─────────────────────────────────────────
+    function loadSlide(i: number) {
+      const idx = (i + total) % total;
+      const slide = slides[idx];
+      if (!slide) return;
+      const src = slide.dataset.src;
+      if (!src) return;
+      slide.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+        if (!img.src) img.src = src;
+      });
+    }
+
+    // ── navigation ────────────────────────────────────────────────
+    function goTo(i: number) {
+      slides[cur].classList.remove('is-active');
+      dots[cur]?.classList.remove('is-active');
+      cur = (i + total) % total;
+      loadSlide(cur);
+      slides[cur].classList.add('is-active');
+      dots[cur]?.classList.add('is-active');
+
+      if (capOut) {
+        const cap = slides[cur].dataset.caption || '';
+        capOut.textContent = cap;
+        capOut.style.display = cap ? '' : 'none';
+      }
+
+      loadSlide(cur + 1);
+      loadSlide(cur - 1);
+    }
+
+    prevBtn?.addEventListener('click', (e) => { e.stopPropagation(); goTo(cur - 1); });
+    nextBtn?.addEventListener('click', (e) => { e.stopPropagation(); goTo(cur + 1); });
+    dots.forEach((dot, i) => dot.addEventListener('click', (e) => { e.stopPropagation(); goTo(i); }));
+
+    let touchX = 0;
+    frame.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+    frame.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) goTo(cur + (dx < 0 ? 1 : -1));
+    });
+
+    frame.addEventListener('click', (e) => {
+      if ((e.target as Element).closest('.arrow, .dot')) return;
+      const photo = slides[cur].querySelector<HTMLImageElement>('.photo');
+      photoData[cur].path = photo?.src || slides[cur].dataset.src || '';
+      openLb([...photoData], cur);
+    });
+
+    if (capOut) {
+      const cap = slides[0]?.dataset.caption || '';
+      if (!cap) capOut.style.display = 'none';
+    }
+
+    // préchargement des voisins du premier slide
+    loadSlide(1);
+    loadSlide(total - 1);
+  });
+</script>

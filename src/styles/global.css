@@ -1,0 +1,164 @@
+@import './fonts.css';
+@import './theme.css';
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	background: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	font-weight: 300;
+	line-height: 1.75;
+	-webkit-font-smoothing: antialiased;
+	transition: background-color 0.3s ease, color 0.3s ease;
+	/* Espace sous la navbar fixe — les héros compensent avec margin-top négatif */
+	padding-top: var(--navbar-height);
+}
+
+.wrap {
+	max-width: 940px;
+	margin: 0 auto;
+	padding: 0 28px;
+	/*
+	 * position + z-index : 0 crée un stacking context au même niveau que .page-hero.
+	 * Comme .wrap vient après PageHeader dans le DOM, il peint en dernier —
+	 * les box-shadows des cartes (notamment les halos colorés au survol) sont
+	 * visibles par-dessus le background-image de l'en-tête.
+	 */
+	position: relative;
+	z-index: 0;
+}
+
+section {
+	padding: 72px 0;
+	border-top: 1px solid var(--color-border);
+}
+
+section:first-of-type {
+	border-top: none;
+}
+
+/* Libellés discrets — en minuscules, Fieldwork Demi-Bold */
+.eyebrow {
+	font-weight: 600;
+	font-size: 12px;
+	letter-spacing: 0.18em;
+	text-transform: lowercase;
+	color: var(--color-text-muted);
+	margin-bottom: 18px;
+}
+
+/* Ogg — réservée aux instants forts, jamais en capitales, jamais pour les titres de section */
+h1,
+.display {
+	font-family: var(--font-display);
+	font-weight: 400;
+	font-size: clamp(44px, 8vw, 82px);
+	line-height: 1.02;
+	letter-spacing: 0.01em;
+}
+
+/* Fieldwork Demi-Bold — titres de section, libellés, navigation, boutons */
+h2 {
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: clamp(23px, 3.3vw, 31px);
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	margin-bottom: 8px;
+}
+
+h3 {
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: 15px;
+	letter-spacing: 0.04em;
+	margin-bottom: 12px;
+}
+
+p {
+	font-size: 16.5px;
+	max-width: 62ch;
+}
+
+p.lead {
+	font-size: 19px;
+	color: var(--color-text);
+}
+
+.muted {
+	color: var(--color-text-muted);
+}
+
+/* Fieldwork Black — données chiffrées (heure, température, altitude…) */
+.figures {
+	font-weight: 900;
+}
+
+a {
+	color: inherit;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+}
+
+/* ── Système glass ──────────────────────────────────────────
+   N'appliquer QUE sur des éléments superposés à une image.
+   Les sections sur fond uni restent mates (principe 90/10).
+───────────────────────────────────────────────────────────── */
+
+/* glass-clear — très transparent, blur léger, fine bordure */
+.glass-clear {
+	background: var(--glass-clear-bg);
+	border: 1px solid var(--glass-clear-border);
+	backdrop-filter: blur(10px) saturate(140%);
+	-webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* glass-blur — flou moyen, teinte plus présente, lisible */
+.glass-blur {
+	background: var(--glass-blur-bg);
+	border: 1px solid var(--glass-blur-border);
+	backdrop-filter: blur(20px) saturate(150%);
+	-webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+/* glass-frosted — fort flou + grain, le plus "matière" */
+.glass-frosted {
+	position: relative;
+	background: var(--glass-frosted-bg);
+	border: 1px solid var(--glass-frosted-border);
+	backdrop-filter: blur(28px) saturate(160%);
+	-webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+/* Texture de bruit sur le frosted */
+.glass-frosted::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	opacity: 0.038;
+	background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'4'%20stitchTiles%3D'stitch'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'200'%20height%3D'200'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+	background-size: 200px 200px;
+	background-repeat: repeat;
+	z-index: 0;
+}
+
+/* Repli propre si backdrop-filter non supporté */
+@supports not (backdrop-filter: blur(1px)) {
+	.glass-clear   { background: var(--glass-clear-fallback); }
+	.glass-blur    { background: var(--glass-blur-fallback); }
+	.glass-frosted { background: var(--glass-frosted-fallback); }
+}

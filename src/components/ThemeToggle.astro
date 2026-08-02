@@ -1,0 +1,78 @@
+---
+---
+
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Basculer entre thème sombre et clair">
+	<svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<circle cx="12" cy="12" r="4"></circle>
+		<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66 4.93 19.07M19.07 4.93l-1.41 1.41"></path>
+	</svg>
+	<svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+	</svg>
+</button>
+
+<style>
+	/* Pastille légère à l'intérieur de la navbar glass */
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		border: 1px solid var(--glass-clear-border);
+		background: rgba(248, 249, 255, 0.06);
+		color: var(--color-text);
+		cursor: pointer;
+		transition: background 0.2s, border-color 0.2s;
+	}
+
+	:root[data-theme='light'] .theme-toggle {
+		background: rgba(69, 68, 65, 0.06);
+	}
+
+	.theme-toggle:hover {
+		background: rgba(248, 249, 255, 0.12);
+		border-color: var(--glass-blur-border);
+	}
+
+	:root[data-theme='light'] .theme-toggle:hover {
+		background: rgba(69, 68, 65, 0.10);
+	}
+
+	.icon {
+		width: 17px;
+		height: 17px;
+	}
+
+	/* Soleil en jaune soleil — accent 10% */
+	.icon-sun {
+		color: var(--color-sun);
+	}
+
+	.icon-moon {
+		display: none;
+		color: #6b9ab8; /* bleu aquatique assombri pour lisibilité en thème clair */
+	}
+
+	:root[data-theme='light'] .icon-sun {
+		display: none;
+	}
+
+	:root[data-theme='light'] .icon-moon {
+		display: block;
+	}
+</style>
+
+<script>
+	const button = document.getElementById('theme-toggle');
+
+	button?.addEventListener('click', () => {
+		const root = document.documentElement;
+		const current = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+		const next = current === 'dark' ? 'light' : 'dark';
+
+		root.setAttribute('data-theme', next);
+		localStorage.setItem('theme', next);
+	});
+</script>

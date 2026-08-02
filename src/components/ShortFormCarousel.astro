@@ -1,0 +1,414 @@
+---
+interface VideoEntry { src: string; zoom: number; }
+
+interface Props {
+  videos: VideoEntry[];
+  previewTime?: number;
+}
+
+const { videos, previewTime = 7 } = Astro.props;
+const total = videos.length;
+
+function initOffset(i: number): number {
+  let o = i;
+  if (o > Math.floor(total / 2)) o -= total;
+  return o;
+}
+---
+
+<div class="shorts" data-total={total} data-preview={previewTime}>
+  <div class="clip">
+    <div class="stage">
+      {videos.map((v, i) => {
+        const offset = initOffset(i);
+        return (
+          <div class="card" data-idx={i} data-offset={offset}>
+            <video
+              class="vid"
+              src={v.src}
+              muted
+              playsinline
+              loop
+              preload={Math.abs(offset) <= 1 ? 'metadata' : 'none'}
+              style={v.zoom !== 1 ? `transform: scale(${v.zoom}); transform-origin: center center;` : undefined}
+            ></video>
+            <button class="play-btn" type="button" aria-label="Lire">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+            <button class="sound-btn" type="button" aria-label="Activer le son" data-muted="1" hidden>
+              <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+              <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  {total > 1 && (
+    <div class="arrows">
+      <button class="arr prev" type="button" aria-label="Précédent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <button class="arr next" type="button" aria-label="Suivant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+  )}
+</div>
+
+<style>
+  .shorts {
+    --cw: clamp(180px, 48vw, 260px);
+    --ch: calc(var(--cw) * 16 / 9);
+    position: relative;
+  }
+
+  /* desktop: arrows on sides */
+  @media (min-width: 600px) {
+    .shorts { padding: 0 52px; }
+  }
+
+  .clip {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  }
+
+  .stage {
+    position: relative;
+    height: var(--ch);
+  }
+
+  /* ── cards ─────────────────────────────────────────── */
+  .card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--cw);
+    aspect-ratio: 9 / 16;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--color-surface);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    cursor: pointer;
+    transition:
+      transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity   0.45s ease;
+  }
+
+  /* visible offsets */
+  .card[data-offset="-2"],
+  .card[data-offset="-1"],
+  .card[data-offset="0"],
+  .card[data-offset="1"],
+  .card[data-offset="2"] {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .card[data-offset="0"] {
+    transform: translateX(-50%) translateY(-50%) scale(1);
+    opacity: 1;
+    z-index: 3;
+  }
+  .card[data-offset="1"] {
+    transform: translateX(calc(-50% + var(--cw) * 0.75)) translateY(-50%) scale(0.82);
+    opacity: 0.5;
+    z-index: 2;
+  }
+  .card[data-offset="-1"] {
+    transform: translateX(calc(-50% - var(--cw) * 0.75)) translateY(-50%) scale(0.82);
+    opacity: 0.5;
+    z-index: 2;
+  }
+  .card[data-offset="2"] {
+    transform: translateX(calc(-50% + var(--cw) * 1.26)) translateY(-50%) scale(0.65);
+    opacity: 0.18;
+    z-index: 1;
+  }
+  .card[data-offset="-2"] {
+    transform: translateX(calc(-50% - var(--cw) * 1.26)) translateY(-50%) scale(0.65);
+    opacity: 0.18;
+    z-index: 1;
+  }
+
+  /* ── video ──────────────────────────────────────────── */
+  .vid {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── bouton play : zone cliquable plein cadre, pastille glass-clear centrée ── */
+  .play-btn {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Zone de clic plein cadre, fond transparent */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  /* Pastille glass-clear : le seul élément visible */
+  .play-btn::before {
+    content: '';
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    /* Valeurs fixes : toujours sur vidéo sombre */
+    background: rgba(20, 20, 18, 0.30);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid rgba(248, 249, 255, 0.18);
+    transition: background 0.22s;
+    pointer-events: none;
+  }
+
+  .play-btn:hover::before {
+    background: rgba(20, 20, 18, 0.50);
+  }
+
+  .play-btn svg {
+    position: relative;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+    color: rgba(248, 249, 255, 0.90);
+    filter: drop-shadow(0 1px 8px rgba(20, 20, 18, 0.60));
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  /* En lecture : masque la pastille et l'icône ; la zone cliquable reste active */
+  .play-btn.is-playing::before,
+  .play-btn.is-playing svg {
+    opacity: 0;
+  }
+
+  /* ── sound button (pastille glass-clear) ────────────── */
+  .sound-btn {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(20, 20, 18, 0.38);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid rgba(248, 249, 255, 0.14);
+    color: rgba(248, 249, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    pointer-events: auto;
+    z-index: 4;
+  }
+
+  .sound-btn:hover {
+    background: rgba(20, 20, 18, 0.58);
+    color: #f8f9ff;
+  }
+
+  .sound-btn svg { width: 16px; height: 16px; }
+
+  /* swap icon based on muted state */
+  .sound-btn .icon-sound { display: none; }
+  .sound-btn .icon-muted { display: block; }
+  .sound-btn[data-muted="0"] .icon-sound { display: block; }
+  .sound-btn[data-muted="0"] .icon-muted { display: none; }
+
+  /* ── arrows ─────────────────────────────────────────── */
+  .arrows {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  @media (min-width: 600px) {
+    .arrows { display: contents; }
+
+    .arr {
+      position: absolute;
+      top: calc(var(--ch) / 2);
+      transform: translateY(-50%);
+    }
+    .arr.prev { left: 0; }
+    .arr.next { right: 0; }
+  }
+
+  /* ── flèches glass-clear (sur fond de page) ─────────── */
+  .arr {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass-clear-bg);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid var(--glass-clear-border);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .arr { background: var(--glass-clear-fallback); }
+  }
+
+  .arr:hover {
+    background: var(--glass-blur-bg);
+    border-color: var(--glass-blur-border);
+  }
+
+  .arr svg { width: 20px; height: 20px; }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.shorts').forEach((el) => {
+    const cards = Array.from(el.querySelectorAll<HTMLElement>('.card'));
+    const total = cards.length;
+    let current = 0;
+    let touchStartX = 0;
+    const PREVIEW_T = Number(el.dataset.preview ?? 7);
+
+    const getVideo    = (c: HTMLElement) => c.querySelector<HTMLVideoElement>('.vid')!;
+    const getPlayBtn  = (c: HTMLElement) => c.querySelector<HTMLButtonElement>('.play-btn')!;
+    const getSoundBtn = (c: HTMLElement) => c.querySelector<HTMLButtonElement>('.sound-btn')!;
+
+    function seekToPreview(vid: HTMLVideoElement) {
+      const t = (!isNaN(vid.duration) && vid.duration < PREVIEW_T + 0.5)
+        ? vid.duration * 0.75
+        : PREVIEW_T;
+      vid.currentTime = t;
+    }
+
+    function offset(i: number): number {
+      let o = i - current;
+      if (o >  Math.floor(total / 2)) o -= total;
+      if (o < -Math.floor(total / 2)) o += total;
+      return o;
+    }
+
+    function stopCard(card: HTMLElement) {
+      const vid = getVideo(card);
+      if (!vid.paused) vid.pause();
+      seekToPreview(vid);
+      getPlayBtn(card).classList.remove('is-playing');
+      getSoundBtn(card).hidden = true;
+    }
+
+    function warmCard(card: HTMLElement) {
+      const vid = getVideo(card);
+      if (vid.preload === 'none') {
+        vid.preload = 'metadata';
+        vid.load();
+      }
+      if (vid.readyState >= 1 && vid.paused) seekToPreview(vid);
+    }
+
+    function setActive(newIndex: number) {
+      const oldCenter = cards.find((c) => c.dataset.offset === '0');
+      if (oldCenter) stopCard(oldCenter);
+
+      current = ((newIndex % total) + total) % total;
+
+      cards.forEach((card, i) => {
+        const o = offset(i);
+        card.dataset.offset = String(o);
+        if (Math.abs(o) <= 1) warmCard(card);
+      });
+    }
+
+    // arrows
+    el.querySelector('.arr.prev')?.addEventListener('click', () => setActive(current - 1));
+    el.querySelector('.arr.next')?.addEventListener('click', () => setActive(current + 1));
+
+    // per-card setup
+    cards.forEach((card, i) => {
+      const vid      = getVideo(card);
+      const playBtn  = getPlayBtn(card);
+      const soundBtn = getSoundBtn(card);
+
+      // seek to preview frame when metadata becomes available
+      function handleMetadata() {
+        if (vid.paused) seekToPreview(vid);
+      }
+      if (vid.readyState >= 1) {
+        handleMetadata();
+      } else {
+        vid.addEventListener('loadedmetadata', handleMetadata, { once: true });
+      }
+
+      card.addEventListener('click', () => {
+        if (card.dataset.offset !== '0') setActive(i);
+      });
+
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (card.dataset.offset !== '0') { setActive(i); return; }
+        if (vid.paused) {
+          vid.currentTime = 0;
+          vid.play();
+          playBtn.classList.add('is-playing');
+          soundBtn.hidden = false;
+        } else {
+          vid.pause();
+          playBtn.classList.remove('is-playing');
+          soundBtn.hidden = true;
+        }
+      });
+
+      soundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        vid.muted = !vid.muted;
+        soundBtn.dataset.muted = vid.muted ? '1' : '0';
+        soundBtn.setAttribute('aria-label', vid.muted ? 'Activer le son' : 'Couper le son');
+      });
+    });
+
+    // touch swipe
+    el.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    el.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 48) setActive(dx < 0 ? current + 1 : current - 1);
+    });
+
+    // warm ±1 on init
+    cards.forEach((card, i) => {
+      if (Math.abs(offset(i)) <= 1) warmCard(card);
+    });
+  });
+</script>

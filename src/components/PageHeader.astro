@@ -1,0 +1,125 @@
+---
+interface Props {
+	image: string;
+	imagePosition?: string;
+	eyebrow: string;
+	title: string;
+	subtitle?: string;
+}
+
+const { image, imagePosition = 'center', eyebrow, title, subtitle } = Astro.props;
+---
+
+<div
+	class="page-hero"
+	style={`background-image: url('${image}'); background-position: ${imagePosition}`}
+>
+	<div class="hero-inner">
+		<div class="glass-panel">
+			<div class="eyebrow">{eyebrow}</div>
+			<h2 class="hero-title">{title}</h2>
+			{subtitle && <p class="hero-sub">{subtitle}</p>}
+		</div>
+		<slot />
+	</div>
+</div>
+
+<style>
+	/* ── Bande d'en-tête plein cadre ────────────────── */
+	.page-hero {
+		position: relative;
+		/*
+		 * z-index: 0 crée un stacking context propre.
+		 * Cela contient ::after (z-index: 1) et .hero-inner (z-index: 2)
+		 * à l'intérieur de ce contexte — ils ne participent plus au contexte
+		 * racine et ne peuvent plus peindre PAR-DESSUS les halos des cartes
+		 * dans .wrap (qui partage le même z-index: 0 mais vient plus tard dans le DOM).
+		 */
+		z-index: 0;
+		/* Remonte sous la navbar fixe (même logique que les héros de projet) */
+		margin-top: calc(-1 * var(--navbar-height));
+		height: 46vh;
+		min-height: 300px;
+		background-size: cover;
+		/* Aligne le contenu en bas de la bande */
+		display: flex;
+		align-items: flex-end;
+	}
+
+	/* Fondu bas vers la couleur de fond — sans artefact "gris" grâce à --color-bg-alpha0 */
+	.page-hero::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 55%;
+		background: linear-gradient(to bottom, var(--color-bg-alpha0), var(--color-bg) 90%);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* ── Conteneur interne (respects le max-width) ── */
+	.hero-inner {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		max-width: 940px;
+		margin: 0 auto;
+		padding: 0 28px 38px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+	}
+
+	/* ── Panneau glass-blur ─────────────────────────── */
+	.glass-panel {
+		/* Largeur adaptée au contenu, jamais plus de 56% */
+		width: fit-content;
+		max-width: 56%;
+		padding: 22px 28px;
+		border-radius: 14px;
+
+		background: var(--glass-blur-bg);
+		backdrop-filter: blur(20px) saturate(150%);
+		-webkit-backdrop-filter: blur(20px) saturate(150%);
+		border: 1px solid var(--glass-blur-border);
+	}
+
+	@supports not (backdrop-filter: blur(1px)) {
+		.glass-panel { background: var(--glass-blur-fallback); }
+	}
+
+	/* Réduit la marge globale du .eyebrow à l'intérieur du panneau */
+	.glass-panel :global(.eyebrow) {
+		margin-bottom: 6px;
+	}
+
+	.hero-title {
+		/* Annule la marge basse par défaut du h2 global */
+		margin-bottom: 0;
+		color: var(--color-text);
+	}
+
+	.hero-sub {
+		margin-top: 6px;
+		font-size: 15px;
+		font-weight: 300;
+		color: var(--color-text-muted);
+		margin-bottom: 0;
+	}
+
+	/* ── Mobile ─────────────────────────────────────── */
+	@media (max-width: 640px) {
+		.page-hero {
+			height: 42vh;
+			min-height: 260px;
+		}
+
+		.glass-panel {
+			max-width: 100%;
+			width: 100%;
+		}
+	}
+</style>

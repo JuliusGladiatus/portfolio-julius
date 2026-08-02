@@ -1,0 +1,177 @@
+---
+interface Props {
+  images: string[];
+}
+const { images } = Astro.props;
+---
+
+<div class="fresque-bleed">
+  <div class="fresque-wrap" data-count={images.length}>
+    <div class="fresque">
+      {[...images, ...images].map((src, i) => (
+        <img
+          class="fresque-img"
+          src={src}
+          alt=""
+          loading={i < 6 ? 'eager' : 'lazy'}
+          decoding={i < 6 ? 'sync' : 'async'}
+          draggable="false"
+        />
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* casse hors du .wrap pour être pleine page */
+  .fresque-bleed {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .fresque-wrap {
+    overflow: hidden;
+    height: clamp(260px, 58vh, 580px);
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .fresque-wrap:active {
+    cursor: grabbing;
+  }
+
+  .fresque {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+    /* pas de gap : les images se raccordent bord à bord */
+  }
+
+  .fresque-img {
+    height: 100%;
+    width: auto;
+    /* l'aspect-ratio permet au navigateur de réserver la largeur
+       avant le chargement des images lazies, rendant scrollWidth fiable dès le départ */
+    aspect-ratio: 1080 / 1350;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.fresque-wrap').forEach((wrap) => {
+    const fresque = wrap.querySelector<HTMLElement>('.fresque')!;
+
+    const SPEED = 45;   // px/s, rythme travelling contemplatif
+    const RESUME_DELAY = 2500; // ms avant reprise auto après interaction
+
+    let scrollX = 0;
+    let halfWidth = 0;
+    let lastTime: number | null = null;
+    let isAuto = true;
+    let animId: number;
+    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /* ── mesure de la moitié de la bande ──────────────── */
+    function recomputeHalfWidth() {
+      halfWidth = fresque.scrollWidth / 2;
+    }
+
+    new ResizeObserver(recomputeHalfWidth).observe(fresque);
+
+    /* ── boucle d'animation ───────────────────────────── */
+    function tick(ts: number) {
+      if (isAuto) {
+        if (lastTime === null) lastTime = ts;
+        const dt = (ts - lastTime) / 1000;
+        lastTime = ts;
+
+        scrollX += SPEED * dt;
+        if (halfWidth > 0 && scrollX >= halfWidth) {
+          scrollX -= halfWidth;
+        }
+        fresque.style.transform = `translateX(${-scrollX}px)`;
+      } else {
+        lastTime = null; // reset pour un redémarrage sans saut
+      }
+      animId = requestAnimationFrame(tick);
+    }
+
+    /* ── reprise douce après interaction ──────────────── */
+    function scheduleResume() {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        isAuto = true;
+      }, RESUME_DELAY);
+    }
+
+    /* ── normalise scrollX dans [0, halfWidth[ ────────── */
+    function normalizeX(x: number) {
+      if (halfWidth <= 0) return 0;
+      return ((x % halfWidth) + halfWidth) % halfWidth;
+    }
+
+    /* ── drag souris ──────────────────────────────────── */
+    let dragStartX = 0;
+    let dragStartScrollX = 0;
+    let isDragging = false;
+
+    wrap.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      isAuto = false;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      dragStartX = e.clientX;
+      dragStartScrollX = scrollX;
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      scrollX = normalizeX(dragStartScrollX - dx);
+      fresque.style.transform = `translateX(${-scrollX}px)`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      scheduleResume();
+    });
+
+    /* ── swipe tactile ────────────────────────────────── */
+    let touchStartX = 0;
+    let touchStartScrollX = 0;
+
+    wrap.addEventListener('touchstart', (e) => {
+      isAuto = false;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      touchStartX = e.touches[0].clientX;
+      touchStartScrollX = scrollX;
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', (e) => {
+      const dx = e.touches[0].clientX - touchStartX;
+      scrollX = normalizeX(touchStartScrollX - dx);
+      fresque.style.transform = `translateX(${-scrollX}px)`;
+    }, { passive: true });
+
+    wrap.addEventListener('touchend', () => {
+      scheduleResume();
+    });
+
+    /* ── démarrage ────────────────────────────────────── */
+    // Deux frames d'attente pour que le layout (aspect-ratio) soit calculé
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        recomputeHalfWidth();
+        animId = requestAnimationFrame(tick);
+      });
+    });
+  });
+</script>

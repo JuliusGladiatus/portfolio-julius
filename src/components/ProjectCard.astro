@@ -1,0 +1,182 @@
+---
+interface Props {
+	href: string;
+	/** Valeur CSS background-image : url('/chemin.jpg') ou un dégradé de remplacement */
+	image: string;
+	title: string;
+	category: string;
+}
+
+const { href, image, title, category } = Astro.props;
+
+// Couleur d'accent par catégorie (touche 10%, posée sur le libellé uniquement)
+const categoryColors: Record<string, string> = {
+	voyage:    'var(--color-nature)',  /* #AEC9A7 — vert nature    */
+	sport:     'var(--color-sun)',     /* #FFDA91 — jaune soleil   */
+	corporate: 'var(--color-water)',   /* #A9C2D9 — bleu aquatique */
+};
+const catColor = categoryColors[category] ?? 'rgba(248, 249, 255, 0.75)';
+---
+
+<a class="pcard" href={href} style={`background-image: ${image}; --cat-color: ${catColor}`}>
+	<div class="glass-band">
+		<span class="nm display">{title}</span>
+		<span class="cat">{category}</span>
+	</div>
+</a>
+
+<style>
+	/* ── Carte ──────────────────────────────────────── */
+	.pcard {
+		position: relative;
+		display: block;
+		border-radius: 10px;
+		overflow: hidden;
+		aspect-ratio: 4 / 5;
+		background-size: cover;
+		background-position: center;
+		cursor: pointer;
+		/* Élévation douce au survol */
+		transition:
+			box-shadow 0.40s cubic-bezier(0.22, 1, 0.36, 1),
+			transform  0.40s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	@media (hover: hover) {
+		.pcard:hover,
+		.pcard:focus-visible {
+			transform: translateY(-3px);
+			/* Halo coloré selon la catégorie — rayonnement doux et diffus */
+			box-shadow: 0 10px 64px 14px color-mix(in srgb, var(--cat-color) 28%, transparent);
+		}
+	}
+
+	/* Repli navigateurs sans color-mix (Chrome <111, Safari <16.2) */
+	@supports not (color: color-mix(in srgb, red 50%, blue)) {
+		@media (hover: hover) {
+			.pcard:hover,
+			.pcard:focus-visible {
+				box-shadow: 0 10px 48px rgba(10, 10, 8, 0.22);
+			}
+		}
+	}
+
+	/* ── Bande glass-frosted — occupe 55% de la carte ─ */
+	.glass-band {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		/*
+		 * Hauteur explicite : le panneau monte jusqu'à mi-carte,
+		 * le texte est poussé en bas (justify-content: flex-end).
+		 * Le dégradé du masque peut ainsi s'étaler sur toute cette hauteur.
+		 */
+		height: 55%;
+		padding: 0 20px 20px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+		text-align: center;
+		gap: 5px;
+
+		/*
+		 * Fond très peu opaque — la photo doit transparaître nettement.
+		 * La lisibilité repose sur le flou et les text-shadows, pas l'opacité.
+		 */
+		background: rgba(14, 13, 12, 0.13);
+		backdrop-filter: blur(52px) saturate(180%);
+		-webkit-backdrop-filter: blur(52px) saturate(180%);
+
+		/*
+		 * Dégradé de masque long et progressif :
+		 * le verre émerge très graduellement depuis le milieu de la carte.
+		 * mask-image sur le même élément que backdrop-filter fonctionne
+		 * en Chrome 120+, Safari 17+, Firefox 103+.
+		 */
+		mask-image: linear-gradient(
+			to bottom,
+			transparent  0%,
+			rgba(0,0,0,0.15) 30%,
+			rgba(0,0,0,0.55) 55%,
+			black        80%
+		);
+		-webkit-mask-image: linear-gradient(
+			to bottom,
+			transparent  0%,
+			rgba(0,0,0,0.15) 30%,
+			rgba(0,0,0,0.55) 55%,
+			black        80%
+		);
+
+		/* Au repos : sous la carte (overflow:hidden la cache) */
+		transform: translateY(100%);
+		opacity: 0;
+		transition:
+			transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity   0.28s ease;
+	}
+
+	/* Grain caractéristique du frosted glass */
+	.glass-band::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0.13;
+		background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'200'%20height%3D'200'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'4'%20stitchTiles%3D'stitch'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'200'%20height%3D'200'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+		background-size: 200px 200px;
+		background-repeat: repeat;
+	}
+
+	@supports not (backdrop-filter: blur(1px)) {
+		.glass-band {
+			background: rgba(14, 13, 12, 0.82);
+			mask-image: none;
+			-webkit-mask-image: none;
+		}
+	}
+
+	/* ── Survol (desktop) : glisse vers le haut ─────── */
+	@media (hover: hover) {
+		.pcard:hover .glass-band,
+		.pcard:focus-visible .glass-band {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	/* ── Mobile : bande permanente ──────────────────── */
+	@media (hover: none) {
+		.glass-band {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	/* ── Titre en Ogg ─────────────────────────────── */
+	.nm {
+		font-size: 26px;
+		color: var(--color-snow);
+		/* Ombre renforcée : lisibilité via le texte, pas l'opacité du verre */
+		text-shadow:
+			0 2px 16px rgba(8, 8, 6, 0.80),
+			0 1px  6px rgba(8, 8, 6, 0.55);
+		line-height: 1.1;
+		position: relative;
+		z-index: 1;
+	}
+
+	/* ── Libellé catégorie avec accent couleur ──────── */
+	.cat {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: lowercase;
+		color: var(--cat-color);
+		text-shadow: 0 1px 8px rgba(8, 8, 6, 0.60);
+		position: relative;
+		z-index: 1;
+	}
+</style>

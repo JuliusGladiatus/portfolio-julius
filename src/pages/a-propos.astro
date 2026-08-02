@@ -1,0 +1,149 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Button from '../components/Button.astro';
+import Footer from '../components/Footer.astro';
+
+const gear = [
+  { label: 'Cinéma & photo',    detail: 'Sony A7III · 24-105mm f/4' },
+  { label: 'Aérien',            detail: 'DJI Mini 3' },
+  { label: 'Action & embarqué', detail: 'DJI Osmo Action 3' },
+  { label: 'Stabilisation',     detail: 'DJI RS3 Mini' },
+  { label: 'Son',               detail: 'Rode VideoMic Pro · DJI Mic 3 Pro' },
+];
+---
+
+<Layout title="À propos — Julius Behind The Scenes">
+  <Navbar />
+
+  <PageHeader
+    image="/images/photo-paysage.png"
+    imagePosition="center 40%"
+    eyebrow="à propos"
+    title="Derrière la caméra"
+  />
+
+  <div class="wrap">
+
+    <!-- ── 1. Le parcours ─────────────────────────────── -->
+    <section class="text-section">
+      <h3 class="section-label">Le parcours</h3>
+      <div class="prose">
+        <p>
+          Je suis réalisateur et photographe, basé entre les montagnes et les côtes —
+          partout où la lumière mérite d'être suivie.
+        </p>
+        <p>
+          La caméra est arrivée tôt. Adolescent, je filmais, je montais, je publiais
+          jusqu'à ce qu'une communauté grandisse autour de ces vidéos sur YouTube. C'est
+          là que j'ai tout appris : raconter, rythmer, recommencer. Cinq ans d'études en
+          communication plus tard, je mets cette double culture, l'image et la stratégie,
+          au service de marques et de projets qui ont une histoire à raconter.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 2. Ce qui me fait courir ───────────────────── -->
+    <section class="text-section">
+      <h3 class="section-label">Ce qui me fait courir</h3>
+      <div class="prose">
+        <p>
+          Ce que je filme, c'est ce qui m'anime : le sport et son intensité silencieuse,
+          les terres à explorer, le patrimoine et l'histoire qu'on porte sans toujours la voir.
+          Mes projets personnels et mes commandes puisent dans les mêmes obsessions.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 3. Matériel ────────────────────────────────── -->
+    <section class="gear-section">
+      <h3 class="section-label">Matériel</h3>
+      <div class="gear-grid">
+        {gear.map(item => (
+          <div class="gear-item">
+            <span class="gear-label">{item.label}</span>
+            <span class="gear-detail">{item.detail}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ── 4. CTA ──────────────────────────────────────── -->
+    <section class="cta">
+      <Button href="/contact" variant="solid">Discuter d'un projet</Button>
+    </section>
+
+  </div>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* ── sections texte ─────────────────────────────────── */
+  .text-section {
+    margin-bottom: 52px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    color: var(--color-text-muted);
+    margin-bottom: 16px;
+  }
+
+  .prose p {
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.75;
+    max-width: 62ch;
+    margin-bottom: 12px;
+    color: var(--color-text);
+  }
+
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ── matériel ───────────────────────────────────────── */
+  .gear-section {
+    margin-bottom: 64px;
+  }
+
+  .gear-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    border: 1px solid var(--color-surface-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .gear-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 20px;
+    background: var(--color-surface);
+  }
+
+  .gear-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: lowercase;
+    color: var(--color-text);
+  }
+
+  .gear-detail {
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  /* ── CTA ────────────────────────────────────────────── */
+  .cta {
+    margin-bottom: 20px;
+  }
+</style>

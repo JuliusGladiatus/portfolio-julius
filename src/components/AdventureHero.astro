@@ -1,0 +1,189 @@
+---
+interface Props {
+	/** Valeur CSS background-image : url('/chemin.jpg') ou un dégradé — fond de secours */
+	image: string;
+	/** Liste de chemins d'images pour le diaporama défilant (remplace image + videoSrc) */
+	heroImages?: string[];
+	/** Chemin vers une vidéo de fond (autoplay, muette, en boucle) */
+	videoSrc?: string;
+	placeName: string;
+	time: string;
+	period?: string;
+	location: string;
+	temperature: string;
+	date: string;
+	imagePosition?: string;
+}
+
+const { image, heroImages, videoSrc, placeName, time, period, location, temperature, date, imagePosition } = Astro.props;
+const hasCarrousel = heroImages && heroImages.length > 0;
+---
+
+<div class="hero" style={`background-image: ${image}; background-position: ${imagePosition ?? 'center'}`}>
+
+	{hasCarrousel ? (
+		<div class="strip-wrap">
+			<div class="strip">
+				{/* Dupliquer la liste pour un loop CSS sans accroc */}
+				{[...heroImages!, ...heroImages!].map((src, i) => (
+					<img
+						class="strip-img"
+						src={src}
+						alt=""
+						loading={i < 5 ? 'eager' : 'lazy'}
+						decoding="async"
+					/>
+				))}
+			</div>
+		</div>
+	) : videoSrc ? (
+		<video class="bg-video" autoplay muted loop playsinline preload="metadata" src={videoSrc}></video>
+	) : null}
+
+	<div class="overlay"></div>
+
+	<div class="hud">
+		<div class="top">
+			<div class="time figures">{time}{period && <small>{period}</small>}</div>
+			<div class="temp figures">{temperature}</div>
+		</div>
+		<div class="place-meta">{location}</div>
+		<div class="placename display">{placeName}</div>
+		<div class="date">{date}</div>
+	</div>
+</div>
+
+<style>
+	.hero {
+		position: relative;
+		/* Remonte sous la navbar fixe (body a padding-top: --navbar-height) */
+		margin-top: calc(-1 * var(--navbar-height));
+		height: 100vh;
+		min-height: 520px;
+		background-size: cover;
+		background-position: center;
+		overflow: hidden;
+	}
+
+	/* ── fond vidéo ──────────────────────────────────── */
+	.bg-video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		z-index: 0;
+	}
+
+	/* ── bande défilante ─────────────────────────────── */
+	.strip-wrap {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.strip {
+		display: flex;
+		height: 100%;
+		/* -50% = revenir au début après les N premières images (dupliquées) */
+		animation: strip-scroll 90s linear infinite;
+	}
+
+	@keyframes strip-scroll {
+		to { transform: translateX(-50%); }
+	}
+
+	.strip-img {
+		height: 100%;
+		width: auto;
+		object-fit: cover;
+		flex-shrink: 0;
+		display: block;
+	}
+
+	/* ── gradient overlay ────────────────────────────── */
+	.overlay {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: linear-gradient(
+			180deg,
+			var(--color-overlay-top) 0%,
+			rgba(40, 40, 38, 0) 28%,
+			rgba(40, 40, 38, 0) 64%,
+			var(--color-overlay-bottom) 100%
+		);
+		pointer-events: none;
+	}
+
+	/* ── carnet d'aventure ───────────────────────────── */
+	.hud {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		color: var(--color-snow);
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		/* Pousse la zone de centrage sous la navbar → le nom reste centré dans la zone visible */
+		padding-top: var(--navbar-height);
+	}
+
+	.top {
+		position: absolute;
+		/* Repères du haut clairment sous la navbar + marge de respiration */
+		top: calc(var(--navbar-height) + 16px);
+		left: 26px;
+		right: 26px;
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+	}
+
+	.time,
+	.temp {
+		font-size: 22px;
+		letter-spacing: 0.01em;
+	}
+
+	.time small {
+		font-size: 12px;
+		font-weight: 600;
+		margin-left: 3px;
+		vertical-align: 2px;
+	}
+
+	.place-meta {
+		position: absolute;
+		top: calc(var(--navbar-height) + 16px);
+		left: 50%;
+		transform: translateX(-50%);
+		font-weight: 300;
+		font-size: 14px;
+		letter-spacing: 0.04em;
+		text-transform: lowercase;
+		white-space: nowrap;
+	}
+
+	.placename {
+		position: relative;
+		font-size: clamp(40px, 7vw, 68px);
+		text-align: center;
+		text-shadow: 0 1px 30px rgba(40, 40, 38, 0.25);
+		padding: 0 20px;
+	}
+
+	.date {
+		position: absolute;
+		bottom: 22px;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-weight: 300;
+		font-size: 14px;
+		letter-spacing: 0.05em;
+		text-transform: lowercase;
+	}
+</style>

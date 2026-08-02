@@ -1,0 +1,150 @@
+---
+interface Props {
+	platform?: 'youtube' | 'vimeo';
+	videoId?: string;
+	title: string;
+	facade?: string;
+	thumbnail?: string;
+}
+
+const { platform, videoId, title, facade = 'linear-gradient(160deg, #6f8a9c 0%, #454441 75%)', thumbnail: thumbProp } = Astro.props;
+const hasVideo = Boolean(platform && videoId);
+
+// priorité : thumbnail manuel → auto YouTube → oEmbed Vimeo (public) → facade
+let thumbnail = facade;
+if (thumbProp) {
+	thumbnail = `url('${thumbProp}'), ${facade}`;
+} else if (platform === 'youtube' && videoId) {
+	thumbnail = `url('https://i.ytimg.com/vi/${videoId}/hqdefault.jpg'), ${facade}`;
+} else if (platform === 'vimeo' && videoId) {
+	try {
+		const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}`);
+		if (res.ok) {
+			const data = await res.json() as { thumbnail_url?: string };
+			if (data.thumbnail_url) {
+				const hq = data.thumbnail_url.replace(/_\d+(x\d+)?(\.\w+)$/, '_1280$2');
+				thumbnail = `url('${hq}'), ${facade}`;
+			}
+		}
+	} catch { /* fallback sur facade */ }
+}
+---
+
+<div
+	class="video-embed"
+	data-platform={hasVideo ? platform : undefined}
+	data-video-id={hasVideo ? videoId : undefined}
+	style={`background-image: ${thumbnail}`}
+>
+	{hasVideo ? (
+		<button class="play" type="button" aria-label={`Lire la vidéo : ${title}`}>
+			<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+				<path d="M8 5v14l11-7z"></path>
+			</svg>
+		</button>
+	) : (
+		<span class="placeholder muted">vidéo à venir</span>
+	)}
+</div>
+
+<style>
+	.video-embed {
+		position: relative;
+		aspect-ratio: 16 / 9;
+		border-radius: 10px;
+		overflow: hidden;
+		background-size: cover;
+		background-position: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.video-embed iframe {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+
+	.play {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 72px;
+		height: 72px;
+		border-radius: 50%;
+		/*
+		 * Pastille glass-clear : valeurs fixes car toujours sur miniature vidéo.
+		 * L'icône blanche avec drop-shadow reste lisible sur toute image de couverture.
+		 */
+		background: rgba(20, 20, 18, 0.26);
+		backdrop-filter: blur(12px) saturate(150%);
+		-webkit-backdrop-filter: blur(12px) saturate(150%);
+		border: 1px solid rgba(248, 249, 255, 0.22);
+		color: rgba(248, 249, 255, 0.92);
+		cursor: pointer;
+		transition: transform 0.25s, background 0.25s;
+	}
+
+	@supports not (backdrop-filter: blur(1px)) {
+		.play { background: rgba(30, 30, 28, 0.70); }
+	}
+
+	.play:hover {
+		transform: scale(1.06);
+		background: rgba(20, 20, 18, 0.46);
+	}
+
+	.play svg {
+		width: 28px;
+		height: 28px;
+		/* Ombre portée : assure la lisibilité de l'icône sur toute couverture */
+		filter: drop-shadow(0 2px 10px rgba(8, 8, 6, 0.65));
+	}
+
+	/* Le voile sombre sur la miniature est supprimé :
+	   la pastille glass-clear assure elle-même sa lisibilité via backdrop-filter + drop-shadow. */
+
+	.placeholder {
+		font-size: 13px;
+		letter-spacing: 0.05em;
+		color: var(--color-snow);
+	}
+</style>
+
+<script>
+	document.querySelectorAll<HTMLElement>('.video-embed[data-video-id]').forEach((embed) => {
+		const button = embed.querySelector('.play');
+		button?.addEventListener('click', () => {
+			const platform = embed.dataset.platform;
+			const id = embed.dataset.videoId;
+			const iframe = document.createElement('iframe');
+
+			if (platform === 'youtube') {
+				// youtube-nocookie + rel=0 + modestbranding : pas de suggestions ni de marque visible
+				iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`;
+				iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+			} else {
+				iframe.src = `https://player.vimeo.com/video/${id}?autoplay=1&title=0&byline=0&portrait=0`;
+				iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+			}
+
+			iframe.allowFullscreen = true;
+			// styles posés en inline : le CSS scopé d'Astro ne s'applique pas aux éléments créés en JS
+			iframe.style.position = 'absolute';
+			iframe.style.inset = '0';
+			iframe.style.width = '100%';
+			iframe.style.height = '100%';
+			iframe.style.border = '0';
+
+			embed.innerHTML = '';
+			embed.style.backgroundImage = 'none';
+			delete embed.dataset.platform;
+			embed.appendChild(iframe);
+		});
+	});
+</script>
