@@ -1,11 +1,13 @@
 ---
+import { withBase } from '../utils/path';
+
 interface Props {
   photos: { src: string; caption?: string }[];
 }
 const { photos } = Astro.props;
 
 const slides = photos.map(p => ({
-  path: p.src.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, ''),
+  path: withBase(p.src.replace(/^url\(['"]?/, '').replace(/['"]?\)$/, '')),
   caption: p.caption ?? '',
 }));
 

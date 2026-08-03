@@ -5,6 +5,7 @@ import Navbar from '../../components/Navbar.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import Footer from '../../components/Footer.astro';
+import { withBase } from '../../utils/path';
 
 const projects = (await getCollection('projects'))
 	.filter((p) => p.data.publie)
@@ -47,7 +48,7 @@ const filters = [
 				{projects.map((project) => (
 					<div class="card-wrap" data-categorie={project.data.categorie}>
 						<ProjectCard
-							href={`/projets/${project.id}`}
+							href={withBase(`/projets/${project.id}`)}
 							image={project.data.image_couverture ?? project.data.image_principale}
 							title={project.data.titre}
 							category={project.data.categorie}

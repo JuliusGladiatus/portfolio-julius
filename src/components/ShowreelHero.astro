@@ -6,6 +6,8 @@ interface Props {
   facade?: string;
 }
 
+import { withBase } from '../utils/path';
+
 const {
   vimeoId,
   videoSrc,
@@ -22,7 +24,7 @@ const hasVideo = !!videoSrc;
   {hasVideo && (
     <video
       class="bg-video"
-      src={videoSrc}
+      src={withBase(videoSrc)}
       autoplay
       muted
       loop

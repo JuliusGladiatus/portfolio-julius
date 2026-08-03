@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/path';
+
 interface Props {
   images: string[];
 }
@@ -11,7 +13,7 @@ const { images } = Astro.props;
       {[...images, ...images].map((src, i) => (
         <img
           class="fresque-img"
-          src={src}
+          src={withBase(src)}
           alt=""
           loading={i < 6 ? 'eager' : 'lazy'}
           decoding={i < 6 ? 'sync' : 'async'}

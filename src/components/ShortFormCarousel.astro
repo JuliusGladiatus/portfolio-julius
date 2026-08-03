@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../utils/path';
+
 interface VideoEntry { src: string; zoom: number; }
 
 interface Props {
@@ -25,7 +27,7 @@ function initOffset(i: number): number {
           <div class="card" data-idx={i} data-offset={offset}>
             <video
               class="vid"
-              src={v.src}
+              src={withBase(v.src)}
               muted
               playsinline
               loop

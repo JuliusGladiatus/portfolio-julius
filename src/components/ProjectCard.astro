@@ -7,6 +7,8 @@ interface Props {
 	category: string;
 }
 
+import { withBaseCss } from '../utils/path';
+
 const { href, image, title, category } = Astro.props;
 
 // Couleur d'accent par catégorie (touche 10%, posée sur le libellé uniquement)
@@ -18,7 +20,7 @@ const categoryColors: Record<string, string> = {
 const catColor = categoryColors[category] ?? 'rgba(248, 249, 255, 0.75)';
 ---
 
-<a class="pcard" href={href} style={`background-image: ${image}; --cat-color: ${catColor}`}>
+<a class="pcard" href={href} style={`background-image: ${withBaseCss(image)}; --cat-color: ${catColor}`}>
 	<div class="glass-band">
 		<span class="nm display">{title}</span>
 		<span class="cat">{category}</span>

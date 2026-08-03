@@ -7,12 +7,14 @@ interface Props {
 	subtitle?: string;
 }
 
+import { withBase } from '../utils/path';
+
 const { image, imagePosition = 'center', eyebrow, title, subtitle } = Astro.props;
 ---
 
 <div
 	class="page-hero"
-	style={`background-image: url('${image}'); background-position: ${imagePosition}`}
+	style={`background-image: url('${withBase(image)}'); background-position: ${imagePosition}`}
 >
 	<div class="hero-inner">
 		<div class="glass-panel">

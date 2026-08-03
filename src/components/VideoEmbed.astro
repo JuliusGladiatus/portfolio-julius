@@ -7,15 +7,19 @@ interface Props {
 	thumbnail?: string;
 }
 
+import { withBase, withBaseCss } from '../utils/path';
+
 const { platform, videoId, title, facade = 'linear-gradient(160deg, #6f8a9c 0%, #454441 75%)', thumbnail: thumbProp } = Astro.props;
 const hasVideo = Boolean(platform && videoId);
 
+const facadeWithBase = withBaseCss(facade);
+
 // priorité : thumbnail manuel → auto YouTube → oEmbed Vimeo (public) → facade
-let thumbnail = facade;
+let thumbnail = facadeWithBase;
 if (thumbProp) {
-	thumbnail = `url('${thumbProp}'), ${facade}`;
+	thumbnail = `url('${withBase(thumbProp)}'), ${facadeWithBase}`;
 } else if (platform === 'youtube' && videoId) {
-	thumbnail = `url('https://i.ytimg.com/vi/${videoId}/hqdefault.jpg'), ${facade}`;
+	thumbnail = `url('https://i.ytimg.com/vi/${videoId}/hqdefault.jpg'), ${facadeWithBase}`;
 } else if (platform === 'vimeo' && videoId) {
 	try {
 		const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${videoId}`);
@@ -23,7 +27,7 @@ if (thumbProp) {
 			const data = await res.json() as { thumbnail_url?: string };
 			if (data.thumbnail_url) {
 				const hq = data.thumbnail_url.replace(/_\d+(x\d+)?(\.\w+)$/, '_1280$2');
-				thumbnail = `url('${hq}'), ${facade}`;
+				thumbnail = `url('${hq}'), ${facadeWithBase}`;
 			}
 		}
 	} catch { /* fallback sur facade */ }

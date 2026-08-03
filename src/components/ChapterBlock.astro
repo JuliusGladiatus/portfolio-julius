@@ -2,6 +2,7 @@
 import VideoEmbed from './VideoEmbed.astro';
 import ShortFormCarousel from './ShortFormCarousel.astro';
 import PhotoCarousel from './PhotoCarousel.astro';
+import { withBase } from '../utils/path';
 
 interface Photo {
   src: string;
@@ -42,7 +43,7 @@ const hasCarousel = chapter.videos_verticales.length > 0;
     <div class="chapter-video">
       {hasFile ? (
         <div class="file-wrap">
-          <video controls preload="metadata" src={chapter.video_fichier}></video>
+          <video controls preload="metadata" src={withBase(chapter.video_fichier!)}></video>
         </div>
       ) : (
         <VideoEmbed

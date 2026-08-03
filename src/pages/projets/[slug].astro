@@ -9,6 +9,7 @@ import FresqueDefilante from '../../components/FresqueDefilante.astro';
 import ChapterBlock from '../../components/ChapterBlock.astro';
 import PhotoCarousel from '../../components/PhotoCarousel.astro';
 import Footer from '../../components/Footer.astro';
+import { withBase } from '../../utils/path';
 
 export async function getStaticPaths() {
 	const projects = (await getCollection('projects')).filter((p) => p.data.publie);
@@ -128,7 +129,7 @@ const { data } = project;
 		{next && next.id !== project.id && (
 			<section class="next">
 				<div class="eyebrow">projet suivant</div>
-				<a class="next-link display" href={`/projets/${next.id}`}>{next.data.titre}</a>
+				<a class="next-link display" href={withBase(`/projets/${next.id}`)}>{next.data.titre}</a>
 			</section>
 		)}
 	</div>

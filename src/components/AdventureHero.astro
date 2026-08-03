@@ -15,11 +15,13 @@ interface Props {
 	imagePosition?: string;
 }
 
+import { withBase, withBaseCss } from '../utils/path';
+
 const { image, heroImages, videoSrc, placeName, time, period, location, temperature, date, imagePosition } = Astro.props;
 const hasCarrousel = heroImages && heroImages.length > 0;
 ---
 
-<div class="hero" style={`background-image: ${image}; background-position: ${imagePosition ?? 'center'}`}>
+<div class="hero" style={`background-image: ${withBaseCss(image)}; background-position: ${imagePosition ?? 'center'}`}>
 
 	{hasCarrousel ? (
 		<div class="strip-wrap">
@@ -28,7 +30,7 @@ const hasCarrousel = heroImages && heroImages.length > 0;
 				{[...heroImages!, ...heroImages!].map((src, i) => (
 					<img
 						class="strip-img"
-						src={src}
+						src={withBase(src)}
 						alt=""
 						loading={i < 5 ? 'eager' : 'lazy'}
 						decoding="async"
@@ -37,7 +39,7 @@ const hasCarrousel = heroImages && heroImages.length > 0;
 			</div>
 		</div>
 	) : videoSrc ? (
-		<video class="bg-video" autoplay muted loop playsinline preload="metadata" src={videoSrc}></video>
+		<video class="bg-video" autoplay muted loop playsinline preload="metadata" src={withBase(videoSrc)}></video>
 	) : null}
 
 	<div class="overlay"></div>

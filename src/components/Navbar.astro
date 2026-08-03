@@ -1,17 +1,18 @@
 ---
 import ThemeToggle from './ThemeToggle.astro';
+import { withBase } from '../utils/path';
 
 const links = [
-	{ href: '/projets', label: 'Projets' },
-	{ href: '/stills', label: 'Stills' },
-	{ href: '/a-propos', label: 'À propos' },
-	{ href: '/contact', label: 'Contact' },
+	{ href: withBase('/projets'), label: 'Projets' },
+	{ href: withBase('/stills'), label: 'Stills' },
+	{ href: withBase('/a-propos'), label: 'À propos' },
+	{ href: withBase('/contact'), label: 'Contact' },
 ];
 ---
 
 <header class="navbar">
 	<div class="wrap inner">
-		<a href="/" class="brand">Julius Behind The Scenes</a>
+		<a href={withBase('/')} class="brand">Julius Behind The Scenes</a>
 
 		<div class="right">
 			<nav class="links" id="nav-links" aria-label="Navigation principale">
