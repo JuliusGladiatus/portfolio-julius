@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Button from '../components/Button.astro';
 import Footer from '../components/Footer.astro';
+import { withBase } from '../utils/path';
 
 const gear = [
   { label: 'Cinéma & photo',    detail: 'Sony A7III · 24-105mm f/4' },
@@ -71,7 +72,7 @@ const gear = [
 
     <!-- ── 4. CTA ──────────────────────────────────────── -->
     <section class="cta">
-      <Button href="/contact" variant="solid">Discuter d'un projet</Button>
+      <Button href={withBase('/contact')} variant="solid">Discuter d'un projet</Button>
     </section>
 
   </div>
